@@ -54,6 +54,13 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
+    /* Declares an oscillator class that is set to operate on float values
+    * currently it is using a lambda function to generate a sine wave, so it needs to be changed
+    * to an actual wave generator class function */
+    juce::dsp::Oscillator<float> float_oscillator_1{ [](float x) {return std::sin(x); }};
+
+    juce::dsp::Gain<float> float_gain_1;
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Juce_oscillatorsAudioProcessor)
 };

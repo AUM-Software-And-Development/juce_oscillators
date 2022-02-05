@@ -93,8 +93,16 @@ void Juce_oscillatorsAudioProcessor::changeProgramName (int index, const juce::S
 //==============================================================================
 void Juce_oscillatorsAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    // This section defines live buffer limitations
+    juce::dsp::ProcessSpec pSpec;
+    pSpec.sampleRate = sampleRate;
+    pSpec.numChannels = getTotalNumOutputChannels();
+    pSpec.maximumBlockSize = samplesPerBlock;
+
+    float_oscillator_1.prepare(pSpec);
+    float_oscillator_1.setFrequency(256.0f);
+    float_gain_1.prepare(pSpec);
+    float_gain_1.setGainLinear(0.01f);
 }
 
 void Juce_oscillatorsAudioProcessor::releaseResources()
@@ -135,27 +143,15 @@ void Juce_oscillatorsAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
+    /* Replace a typecasted array to the buffer zone */
+    juce::dsp::AudioBlock<float> audioBlock {buffer};
+    float_oscillator_1.process(juce::dsp::ProcessContextReplacing<float> (audioBlock));
+    float_gain_1.process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
 
-        // ..do something to the data...
-    }
+
 }
 
 //==============================================================================
