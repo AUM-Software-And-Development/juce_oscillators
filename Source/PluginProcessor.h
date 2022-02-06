@@ -57,7 +57,9 @@ private:
     /* Declares an oscillator class that is set to operate on float values
     * currently it is using a lambda function to generate a sine wave, so it needs to be changed
     * to an actual wave generator class function */
-    juce::dsp::Oscillator<float> float_oscillator_1{ [](float x) {return std::sin(x); }};
+    // juce::dsp::Oscillator<float> float_oscillator_1{ [](float x) {return std::sin(x); }};
+    // juce::dsp::Oscillator<float> float_oscillator_1{ [](float x) {return x/juce::MathConstants<float>::pi; }};
+    juce::dsp::Oscillator<float> float_oscillator_1{ [](float x) {return x < 0.0f? -1.0f:1.0f; }};
 
     juce::dsp::Gain<float> float_gain_1;
 
